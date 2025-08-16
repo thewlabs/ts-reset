@@ -1,0 +1,20 @@
+# Auto-assign configuration
+assignees:
+  - wilfriedago
+
+reviewers:
+  - wilfriedago
+
+skipKeywords:
+  - wip
+  - draft
+  - "[WIP]"
+  - "[DRAFT]"
+
+# Don't assign if PR is from dependabot
+skipDrafts: true
+skipBots: true
+
+# Number of assignees to add
+numberOfAssignees: 1
+numberOfReviewers: 1

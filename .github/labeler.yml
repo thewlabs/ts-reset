@@ -1,0 +1,38 @@
+documentation:
+  - "**/*.md"
+  - "docs/**/*"
+
+configuration:
+  - "*.json"
+  - "*.yml"
+  - "*.yaml"
+  - ".github/**/*"
+  - "tsconfig*.json"
+  - "turbo.json"
+
+source:
+  - "src/**/*"
+
+tooling:
+  - "scripts/**/*"
+
+ci/cd:
+  - ".github/workflows/**/*"
+
+dependencies:
+  - "package.json"
+  - "pnpm-lock.yaml"
+
+tests:
+  - "src/tests/**/*"
+  - "**/*.test.*"
+  - "**/*.spec.*"
+
+bug:
+  - any: ['bug', 'fix', 'issue']
+
+enhancement:
+  - any: ['feat', 'feature', 'enhancement', 'improve']
+
+breaking-change:
+  - any: ['breaking', 'major']

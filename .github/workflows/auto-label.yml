@@ -1,0 +1,100 @@
+name: Auto Label
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  label:
+    name: Auto Label
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Label Pull Requests
+        if: github.event_name == 'pull_request'
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Size Label
+        if: github.event_name == 'pull_request'
+        uses: pascalgn/size-label-action@v0.5.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          sizes: |
+            {
+              "0": "XS",
+              "20": "S",
+              "50": "M",
+              "200": "L",
+              "800": "XL",
+              "2000": "XXL"
+            }
+
+      - name: Auto-assign reviewers
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        uses: kentaro-m/auto-assign-action@v1.2.6
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add labels based on files changed
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            docs:
+              - '**/*.md'
+              - 'docs/**'
+            config:
+              - '*.json'
+              - '*.yml'
+              - '*.yaml'
+              - '.github/**'
+            src:
+              - 'src/**'
+            scripts:
+              - 'scripts/**'
+            ci:
+              - '.github/workflows/**'
+
+      - name: Apply labels
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [];
+            
+            if ('${{ steps.filter.outputs.docs }}' === 'true') {
+              labels.push('documentation');
+            }
+            if ('${{ steps.filter.outputs.config }}' === 'true') {
+              labels.push('configuration');
+            }
+            if ('${{ steps.filter.outputs.src }}' === 'true') {
+              labels.push('source');
+            }
+            if ('${{ steps.filter.outputs.scripts }}' === 'true') {
+              labels.push('tooling');
+            }
+            if ('${{ steps.filter.outputs.ci }}' === 'true') {
+              labels.push('ci/cd');
+            }
+            
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labels
+              });
+            }
