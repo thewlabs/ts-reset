@@ -1,0 +1,152 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      prerelease_tag:
+        description: 'Prerelease tag (alpha, beta, rc)'
+        required: false
+        default: ''
+        type: string
+      skip_ci:
+        description: 'Skip CI checks'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  manual-release:
+    name: Manual Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run CI checks
+        if: ${{ !inputs.skip_ci }}
+        run: pnpm ci
+
+      - name: Create version bump changeset
+        run: |
+          mkdir -p .changeset
+          
+          if [ "${{ inputs.version_bump }}" = "prerelease" ] && [ -n "${{ inputs.prerelease_tag }}" ]; then
+            cat > .changeset/manual-release.md << EOF
+          ---
+          "@thewlabs/ts-reset": prerelease
+          ---
+          
+          Manual ${{ inputs.version_bump }} release with tag ${{ inputs.prerelease_tag }}
+          EOF
+          else
+            cat > .changeset/manual-release.md << EOF
+          ---
+          "@thewlabs/ts-reset": ${{ inputs.version_bump }}
+          ---
+          
+          Manual ${{ inputs.version_bump }} release
+          EOF
+          fi
+
+      - name: Version packages
+        run: pnpm changeset version
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Publish packages
+        run: |
+          if [ "${{ inputs.version_bump }}" = "prerelease" ] && [ -n "${{ inputs.prerelease_tag }}" ]; then
+            pnpm changeset publish --tag ${{ inputs.prerelease_tag }}
+          else
+            pnpm changeset publish
+          fi
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Get package version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Commit version changes
+        run: |
+          git add .
+          git commit -m "chore: release v${{ steps.version.outputs.version }}"
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin main --tags
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: v${{ steps.version.outputs.version }}
+          body: |
+            ## 🚀 Manual Release v${{ steps.version.outputs.version }}
+            
+            This is a manual ${{ inputs.version_bump }} release.
+            
+            ### 📦 Installation
+            
+            ```bash
+            npm install @thewlabs/ts-reset@${{ steps.version.outputs.version }}
+            # or
+            pnpm add @thewlabs/ts-reset@${{ steps.version.outputs.version }}
+            ```
+            
+            ### 🔗 Links
+            
+            - [NPM Package](https://www.npmjs.com/package/@thewlabs/ts-reset)
+            - [Documentation](https://github.com/thewlabs/ts-reset#readme)
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/commits/v${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: ${{ inputs.version_bump == 'prerelease' }}
+
+      - name: Generate provenance attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: "dist/**/*"
