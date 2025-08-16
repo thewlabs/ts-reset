@@ -99,7 +99,11 @@
     }
   },
   "keywords": [],
-  "author": "Matt Pocock",
+  "author": {
+    "name": "Wilfried K. AGO",
+    "email": "hi@wilfriedago.me",
+    "url": "https://github.com/wilfriedago"
+  },
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "^2.29.6",
