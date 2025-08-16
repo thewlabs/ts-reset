@@ -1,5 +1,5 @@
-import * as fs from "fs/promises";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 
 const entrypointDir = path.join(__dirname, "../", "src", "entrypoints");
 const distDir = path.join(__dirname, "../", "dist");
