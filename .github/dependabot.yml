@@ -1,0 +1,83 @@
+version: 2
+updates:
+  # Monitor npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Africa/Porto-Novo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    assignees:
+      - "wilfriedago"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    groups:
+      # Group TypeScript and related tooling
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+          - "ts-*"
+          - "eslint*"
+          - "prettier"
+          - "@typescript-eslint/*"
+      # Group testing dependencies
+      testing:
+        patterns:
+          - "*jest*"
+          - "@jest/*"
+          - "vitest"
+          - "@vitest/*"
+          - "c8"
+          - "nyc"
+          - "tap"
+      # Group build and bundling tools
+      build-tools:
+        patterns:
+          - "rollup"
+          - "@rollup/*"
+          - "esbuild"
+          - "tsup"
+          - "unbuild"
+          - "turbo"
+          - "nx"
+      # Group linting and formatting
+      code-quality:
+        patterns:
+          - "eslint"
+          - "@eslint/*"
+          - "prettier"
+          - "biome"
+          - "@biomejs/*"
+          - "lint-staged"
+          - "husky"
+    ignore:
+      # Ignore major version updates for stable dependencies
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+
+  # Monitor GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Africa/Porto-Novo"
+    open-pull-requests-limit: 5
+    assignees:
+      - "wilfriedago"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      # Group all GitHub Actions updates
+      github-actions:
+        patterns:
+          - "*"
