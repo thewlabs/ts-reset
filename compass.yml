@@ -1,0 +1,16 @@
+name: ts-reset
+id: ari:cloud:compass:6531ebe9-1b3a-4f2a-8653-180c5ab1b17d:component/a11e654f-fbb0-4383-891d-d22c4dacf0af/ae718449-5e94-4dd2-8ac7-5b66808a5d90
+description: A 'CSS reset' for TypeScript, improving types for common JavaScript API's
+configVersion: 1
+typeId: SERVICE
+fields:
+  tier: 4
+links:
+  - name: null
+    type: REPOSITORY
+    url: https://github.com/thewlabs/ts-reset
+relationships:
+  DEPENDS_ON: []
+labels:
+  - source:github
+customFields: null
