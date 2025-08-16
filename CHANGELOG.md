@@ -1,4 +1,4 @@
-# @total-typescript/ts-reset
+# @thewlabs/ts-reset
 
 ## 0.6.1
 
@@ -124,7 +124,7 @@
 
   ```ts
   // AFTER
-  import "@total-typescript/ts-reset/map-has";
+  import "@thewlabs/ts-reset/map-has";
 
   const userMap = new Map([
     ["matt", 0],
