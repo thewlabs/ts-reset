@@ -1,4 +1,4 @@
-![TS Reset - Improved TypeScript's Built-in Typings](https://raw.githubusercontent.com/mattpocock/ts-reset/main/og-image.png)
+# TS Reset - Improved TypeScript's Built-in Typings
 
 **Without `ts-reset`**:
 
@@ -14,7 +14,3 @@
 - ✅ `.filter(Boolean)` behaves EXACTLY how you expect
 - 🥹 `array.includes` is widened to be more ergonomic
 - 🚀 And several more changes!
-
-## Official Docs
-
-Check out our docs page on [Total TypeScript](https://totaltypescript.com/ts-reset)
